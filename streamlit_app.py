@@ -26,11 +26,12 @@ def get_user_location():
 
 # Example usage
 user_location = get_user_location()
+location_df = pd.DataFrame([user_location])
 
 
 with st.sidebar:
   st.write('**PARAMETERS TO CHANGE**')
 with st.expander('DATA'):
   st.write('Hello world!')
-  user_location
+  location_df
   restaurant_data
