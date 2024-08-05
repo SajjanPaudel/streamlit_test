@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# Title of the app
 st.title('🎈Testing Streamlit for Data Science')
 
-# Load restaurant data
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
 
 # Define the HTML and JavaScript code
@@ -31,10 +29,9 @@ function showPosition(position) {
   x.innerHTML = "Latitude: " + position.coords.latitude +
   "<br>Longitude: " + position.coords.longitude;
 
-  // Send data to Streamlit by updating the query parameters
-  const locationData = `${position.coords.latitude},${position.coords.longitude}`;
-  const queryString = `?location=${locationData}`;
-  window.location.search = queryString;
+  // Send data to Streamlit
+  const streamlitMessage = `${position.coords.latitude},${position.coords.longitude}`;
+  window.parent.postMessage(streamlitMessage, "*");
 }
 
 function showError(error) {
@@ -65,15 +62,24 @@ window.onload = getLocation;
 # Embed the HTML and JavaScript code in Streamlit
 st.components.v1.html(html_code, height=300)
 
-# Function to capture location data sent from JavaScript
-def get_location():
-    location_data = st.experimental_get_query_params().get('location', [''])[0]
-    if location_data:
-        return location_data
-    return None
+# Function to handle location data sent from JavaScript
+location = st.session_state.get('location', '')
 
-# Fetch and display the location
-location = get_location()
+# JavaScript to receive postMessage
+st_javascript("""
+window.addEventListener('message', (event) => {
+    const location = event.data;
+    document.body.innerHTML += `<input type='hidden' id='location' value='${location}'>`;
+});
+""")
+
+# Check if location data is received
+location_received = st.experimental_get_query_params().get('location', [''])[0]
+if location_received and location_received != location:
+    st.session_state['location'] = location_received
+    location = location_received
+
+# Display the location
 if location:
     st.write(f"Location: {location}")
 else:
