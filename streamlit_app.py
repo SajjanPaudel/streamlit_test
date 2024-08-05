@@ -4,7 +4,9 @@ import requests
 
 st.title('🎈Testing streamlit for data science')
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
-#get location of user
+
+
+# Define a function to get the user's location
 def get_user_location():
     location_js = """
     <script>
@@ -66,7 +68,12 @@ location_data = st.components.v1.html(
     """,
     height=0
 )
-location_data
+
+# Get the location from the hidden div
+if location_data:
+    st.write('Location:', location_data)
+else:
+    st.write('Could not fetch location')
 
 
 with st.sidebar:
