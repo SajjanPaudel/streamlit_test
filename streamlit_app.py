@@ -66,7 +66,7 @@ location_data = st.components.v1.html(
     """,
     height=0
 )
-location_data:
+location_data
 
 
 with st.sidebar:
