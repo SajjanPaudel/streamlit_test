@@ -26,10 +26,6 @@ def get_user_location():
 
 # Example usage
 user_location = get_user_location()
-if user_location:
-  user_location_df = pd.DataFrame(user_location)
-else:
-    print("Could not fetch user location.")
 
 
 with st.sidebar:
