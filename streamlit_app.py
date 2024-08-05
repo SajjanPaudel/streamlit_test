@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-import requests 
-from streamlit_javascript import st_javascript
 
-st.title('🎈Testing streamlit for data science')
+# Title of the app
+st.title('🎈Testing Streamlit for Data Science')
+
+# Load restaurant data
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
-
 
 # Define the HTML and JavaScript code
 html_code = """
@@ -31,9 +31,10 @@ function showPosition(position) {
   x.innerHTML = "Latitude: " + position.coords.latitude +
   "<br>Longitude: " + position.coords.longitude;
 
-  // Send data to Streamlit
-  const streamlitMessage = `${position.coords.latitude},${position.coords.longitude}`;
-  window.parent.postMessage(streamlitMessage, "*");
+  // Send data to Streamlit by updating the query parameters
+  const locationData = `${position.coords.latitude},${position.coords.longitude}`;
+  const queryString = `?location=${locationData}`;
+  window.location.search = queryString;
 }
 
 function showError(error) {
@@ -71,15 +72,17 @@ def get_location():
         return location_data
     return None
 
-# Display the location
+# Fetch and display the location
 location = get_location()
 if location:
     st.write(f"Location: {location}")
 else:
     st.write("Fetching location...")
 
+# Display restaurant data in the sidebar and expander
 with st.sidebar:
-  st.write('**PARAMETERS TO CHANGE**')
+    st.write('**PARAMETERS TO CHANGE**')
+
 with st.expander('DATA'):
-  st.write('Hello world!')
-  restaurant_data
+    st.write('Hello world!')
+    st.dataframe(restaurant_data)
