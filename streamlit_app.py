@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import requests 
 
 st.title('🎈Testing streamlit for data science')
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
