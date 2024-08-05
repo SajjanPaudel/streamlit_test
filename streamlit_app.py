@@ -6,35 +6,60 @@ from streamlit_javascript import st_javascript
 st.title('🎈Testing streamlit for data science')
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
 
-# Add a header to the app
-st.header('User Location')
+# Define the HTML and JavaScript code
+html_code = """
+<!DOCTYPE html>
+<html>
+<body>
 
-# Define a JavaScript function to get the user's location
-get_location_js = """
-navigator.geolocation.getCurrentPosition(
-    (position) => {
-        const { latitude, longitude } = position.coords;
-        const locationData = `${latitude},${longitude}`;
-        window.location = `?location=${locationData}`;
-    },
-    (error) => {
-        console.error(error);
-        window.location = `?location=Error`;
-    }
-);
+<h2>User Location</h2>
+<p>Click the button to get your coordinates:</p>
+
+<button onclick="getLocation()">Try It</button>
+
+<p id="demo"></p>
+
+<script>
+const x = document.getElementById("demo");
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else {
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position) {
+  x.innerHTML = "Latitude: " + position.coords.latitude +
+  "<br>Longitude: " + position.coords.longitude;
+
+  // Send data to Streamlit
+  const streamlitMessage = `${position.coords.latitude},${position.coords.longitude}`;
+  window.parent.postMessage(streamlitMessage, "*");
+}
+</script>
+
+</body>
+</html>
 """
 
-# Use st_javascript to execute the JavaScript code
-st_javascript(get_location_js)
+# Embed the HTML and JavaScript code in Streamlit
+st.components.v1.html(html_code, height=300)
 
-# Read the location from the query parameters
-location_data = st.experimental_get_query_params().get('location', [''])[0]
+# Function to capture location data sent from JavaScript
+def get_location():
+    location_data = st.experimental_get_query_params().get('location', [''])[0]
+    if location_data:
+        return location_data
+    return None
 
 # Display the location
-if location_data and location_data != 'Error':
-    st.write(f"Location: {location_data}")
+location = get_location()
+if location:
+    st.write(f"Location: {location}")
 else:
-    st.write("Could not fetch location")
+    st.write("Click the button above to fetch your location.")
 
 
 with st.sidebar:
