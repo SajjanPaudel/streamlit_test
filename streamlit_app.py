@@ -5,8 +5,7 @@ import requests
 st.title('🎈Testing streamlit for data science')
 restaurant_data = pd.read_csv('https://raw.githubusercontent.com/suyogdahal/KhajaTime/master/KhajaTime.csv')
 
-
-# Define a function to get the user's location
+# Define a function to get the user's location using JavaScript
 def get_user_location():
     location_js = """
     <script>
@@ -14,11 +13,16 @@ def get_user_location():
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const {latitude, longitude} = position.coords;
-                document.getElementById('location_data').innerText = `${latitude},${longitude}`;
+                const locationData = `${latitude},${longitude}`;
+                const locationDiv = document.getElementById('location_data');
+                locationDiv.innerText = locationData;
+                locationDiv.dispatchEvent(new Event('location_available'));
             },
             (error) => {
                 console.error(error);
-                document.getElementById('location_data').innerText = 'Error';
+                const locationDiv = document.getElementById('location_data');
+                locationDiv.innerText = 'Error';
+                locationDiv.dispatchEvent(new Event('location_available'));
             }
         );
     }
@@ -35,45 +39,37 @@ st.header('User Location')
 st.components.v1.html(get_user_location(), height=0)
 
 # Placeholder for location data
-location = st.empty()
+if 'location' not in st.session_state:
+    st.session_state['location'] = 'Fetching location...'
 
 # Display the location
-location.text('Fetching location...')
+location = st.empty()
+location.text(st.session_state['location'])
 
-# JavaScript to get the location data from the browser
-location_data = st.components.v1.html(
-    """
-    <script>
-    const getLocation = () => {
-        return new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const {latitude, longitude} = position.coords;
-                    resolve(`${latitude},${longitude}`);
-                },
-                (error) => {
-                    reject('Error');
-                }
-            );
-        });
-    };
+# JavaScript to get the location data from the hidden div and update session state
+location_js = """
+<script>
+const locationDiv = document.getElementById('location_data');
+locationDiv.addEventListener('location_available', function() {
+    const locationData = locationDiv.innerText;
+    if (window.parent) {
+        window.parent.postMessage(locationData, '*');
+    }
+});
+</script>
+"""
 
-    getLocation().then((data) => {
-        document.getElementById('location_data').innerText = data;
-    }).catch((error) => {
-        document.getElementById('location_data').innerText = error;
-    });
-    </script>
-    <div id="location_data" style="display: none;"></div>
-    """,
-    height=0
-)
+# Add the JavaScript to the Streamlit app
+st.components.v1.html(location_js, height=0)
 
-# Get the location from the hidden div
-if location_data:
-    st.write('Location:', location_data)
+# Listen for the location data message from the browser
+location_data = st.experimental_get_query_params().get('location', [''])[0]
+if location_data and location_data != 'Error':
+    st.session_state['location'] = location_data
+    location.text(f"Location: {location_data}")
 else:
-    st.write('Could not fetch location')
+    st.session_state['location'] = 'Could not fetch location'
+    location.text(st.session_state['location'])
 
 
 with st.sidebar:
