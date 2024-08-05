@@ -66,12 +66,7 @@ location_data = st.components.v1.html(
     """,
     height=0
 )
-
-# Get the location from the hidden div
-if location_data:
-    st.write('Location:', location_data)
-else:
-    st.write('Could not fetch location')
+location_data:
 
 
 with st.sidebar:
